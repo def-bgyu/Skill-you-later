@@ -1,0 +1,17 @@
+# Ignore node_modules
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Ignore environment config
+.env
+client/.env
+server/.env
+
+# Ignore build outputs
+dist/
+build/
+
+# OS/Editor-specific files
+.DS_Store
+.vscode/
