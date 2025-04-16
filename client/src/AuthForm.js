@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "./firebase";
 import {
   signInWithEmailAndPassword,
@@ -9,23 +10,48 @@ import {
 function AuthForm({ setUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const signUp = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((res) => {
-        console.log("Signed Up:", res.user);
-        setUser(res.user);
-      })
-      .catch((err) => alert(err.message));
+  const signUp = async () => {
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const user = res.user;
+      setUser(user);
+  
+      // Only save to MongoDB the first time (on signup)
+      await fetch("http://localhost:5000/api/user/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "New User",
+          canTeach: [],
+          wantToLearn: [],
+        }),
+      });
+  
+      console.log("New user saved to MongoDB");
+      //After login/Signup
+      navigate("/home"); 
+    } catch (err) {
+      alert(err.message);
+    }
+
+
   };
 
-  const login = () => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then((res) => {
-        console.log("Logged In:", res.user);
-        setUser(res.user);
-      })
-      .catch((err) => alert(err.message));
+  const login = async () => {
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      const user = res.user;
+      setUser(user);
+  
+      console.log("Logged in user:", user);
+      // Optional: fetch profile here if needed
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const googleLogin = () => {
